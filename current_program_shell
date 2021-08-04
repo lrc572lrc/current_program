@@ -1,0 +1,138 @@
+#!/bin/sh
+##############################################################################
+#
+#	Archivo:	opticlinic_klar-arm
+# 	Descripción:	Instalador del Software Opticlinic Klar-Arm
+#	Propietario:	BI. Yandri Loor
+#	Empresa:	LCP S.A.
+#	URL:		http://www.lcp.gye
+#
+##############################################################################
+
+#-----------------------------------------------------------------------------
+#	Opticlinic Klar-Arm
+#-----------------------------------------------------------------------------
+
+version="1.0.0"
+owner="BD, Yandri Loor"
+name="current_program"
+user="prueba"
+group="prueba"
+
+#=============================================================================
+#	Funciones
+#=============================================================================
+
+message(){
+
+	local UTC="$(date -u +'%Y-%m-%d  %H:%M:%S')"
+
+	case $1 in
+		ERROR ) echo -e "\n\e[1;31m${utc} [ERROR] $2\e[m";;
+		WARNING ) echo -e "\n\e[1;35m${utc} [ADVERTENCIA] $2\e[m";;
+		INFO ) echo -e "\n\e[1;33m${utc} [INFO] $2\e[m";;
+	esac
+
+}
+
+#----------------------------------------------------------------------------
+#	Archivos Temporales
+#----------------------------------------------------------------------------
+
+temp_files(){
+   local user="prueba"
+   local group="prueba"
+	local tmp_dir='/tmp/current_program'
+	local latest="latest.tar.gz"
+   local current_program_command="${tmp_dir}/get_current_program"
+   local current_program_install="${tmp_dir}/install_current_program"
+   local version="grep '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]'* ${tmp_dir}/version"
+
+   mkdir ${tmp_dir} && chown ${user}:${group} ${tmp_dir}/${name}
+	
+	echo -e '#/bin/sh
+get_current_program(){
+   local name="current_program"
+	local user="prueba"
+	local latest="latest.tar.gz"
+	local tmp_dir="/tmp/${name}"
+   local current_program_url="https://ftp.gnu.org/gnu/health"
+
+   local wget_current_program="wget -P ${tmp_dir} ${current_program_url}/${name}-${latest}"
+   local version="$(grep '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]'* ${tmp_dir}/version)"
+   local wget_signature="wget -P ${tmp_dir} ${current_program_url}/${name}-${version}.tar.gz.sig"
+   
+#   ${wget_current_program} 
+
+#   tar -tf ${tmp_dir}/${name}-${latest} | grep version | cat > ${tmp_dir}/1 && tr -d 'gnuhealtvrsio/-' < ${tmp_dir}/1 > ${tmp_dir}/2 | tail -n +2 ${tmp_dir}/2 > ${tmp_dir}/version
+   
+#   ${wget_signature}
+
+}
+
+get_current_program' | cat > ${current_program_command}
+
+	echo -e '#/bin/sh
+
+message(){
+
+	local UTC="$(date -u +'%Y-%m-%d  %H:%M:%S')"
+
+	case $1 in
+		ERROR ) echo -e "\n\e[1;31m${utc} [ERROR] $2\e[m";;
+		WARNING ) echo -e "\n\e[1;35m${utc} [ADVERTENCIA] $2\e[m";;
+		INFO ) echo -e "\n\e[1;33m${utc} [INFO] $2\e[m";;
+	esac
+
+}
+
+install_current_program(){
+   local name="current_program"
+	local user="prueba"
+	local latest="latest.tar.gz"
+	local tmp_dir="/tmp/${name}"
+   local version="$(grep '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]'* ${tmp_dir}/version)"
+
+
+#   local signature="gpg --verify ${tmp_dir}/firma_incorrecta.tar.gz.sig ${tmp_dir}/${name}-${latest}"
+
+#  Firma incorrecta
+#   local signature="gpg --verify ${tmp_dir}/${name}-2.0.4.tar.gz.sig ${tmp_dir}/${name}-${latest}"
+
+#  Firma correcta
+   local signature="gpg --verify ${tmp_dir}/${name}-${version}.tar.gz.sig ${tmp_dir}/${name}-${latest}"
+
+   ${signature}
+
+   if [ $? -eq 0 ]
+
+   then
+
+      tar -xvf ${tmp_dir}/${name}-${latest} -C /home/${user}
+
+      message "INFO" "La firma proporcionada es correcta, se procederá a la descompresión"
+
+   else
+
+      message "ERROR" "La firma proporcionada es incorrecta, el archivo no será descomprimido"
+
+   fi
+
+
+
+
+}
+
+install_current_program' | cat > ${current_program_install}
+
+   chown -R :${group} ${tmp_dir}
+	chmod +x ${current_program_command} ${current_program_install}
+
+#${current_program_command}
+${current_program_install}
+
+
+}
+
+temp_files
+
